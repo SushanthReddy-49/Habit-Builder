@@ -203,14 +203,6 @@ The application includes a comprehensive jQuery utilities file (`client/src/util
 - Toast notifications and progress bars
 - Custom jQuery methods and extensions
 
-### Running Tests
-```bash
-# Frontend tests
-cd client && npm test
-
-# Backend tests (if implemented)
-cd server && npm test
-```
 
 ### Building for Production
 ```bash
@@ -240,25 +232,3 @@ cd server && npm start
 3. Commit your changes: `git commit -am 'Add feature'`
 4. Push to the branch: `git push origin feature-name`
 5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- OpenAI for providing the GPT API
-- The React and Node.js communities for excellent documentation
-- TailwindCSS for the beautiful utility-first CSS framework
-- Framer Motion for smooth animations
-
-## 📞 Support
-
-If you encounter any issues or have questions, please:
-1. Check the existing issues in the repository
-2. Create a new issue with detailed information
-3. Include steps to reproduce the problem
-
----
-
-**Happy task managing! 🎉** 
