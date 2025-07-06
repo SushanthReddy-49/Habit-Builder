@@ -34,7 +34,13 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const response = await axios.get('/api/auth/me');
-          setUser(response.data);
+          const { weeklyUpdate, ...userData } = response.data;
+          setUser(userData);
+          
+          // Handle weekly update notification
+          if (weeklyUpdate && weeklyUpdate.updated) {
+            showToast('🎉 Your weekly points have been updated!', 'success');
+          }
         } catch (error) {
           removeLocalStorage('token');
           delete axios.defaults.headers.common['Authorization'];
@@ -49,11 +55,16 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await axios.post('/api/auth/login', { email, password });
-      const { token, user } = response.data;
+      const { token, user, weeklyUpdate } = response.data;
       
       setLocalStorage('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
+      
+      // Handle weekly update notification
+      if (weeklyUpdate && weeklyUpdate.updated) {
+        showToast('🎉 Your weekly points have been updated!', 'success');
+      }
       
       showToast('Welcome back!', 'success');
       return { success: true };

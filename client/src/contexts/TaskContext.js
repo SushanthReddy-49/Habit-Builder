@@ -139,25 +139,7 @@ export const TaskProvider = ({ children }) => {
     }
   }, []);
 
-  const updateCategoryPoints = useCallback(async () => {
-    try {
-      const response = await axios.post('/api/summary/update-points');
-      const { newPoints, badges } = response.data;
-      
-      if (badges && badges.length > 0) {
-        badges.forEach(badge => {
-          showToast(`🎉 New badge earned: ${badge.name}!`, 'success');
-        });
-      }
-      
-      showToast('Category points updated!', 'success');
-      return { success: true, newPoints, badges };
-    } catch (error) {
-      const message = error.response?.data?.error || 'Failed to update points';
-      showToast(message, 'error');
-      return { success: false, error: message };
-    }
-  }, []);
+
 
   const value = {
     tasks,
@@ -170,8 +152,7 @@ export const TaskProvider = ({ children }) => {
     updateTaskStatus,
     deleteTask,
     fetchReviewTasks,
-    fetchSummary,
-    updateCategoryPoints
+    fetchSummary
   };
 
   return (

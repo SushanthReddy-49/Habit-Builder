@@ -88,39 +88,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// @route   POST /api/summary/update-points
-// @desc    Update category points based on weekly performance (called at end of week)
-// @access  Private
-router.post('/update-points', async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Update category points based on weekly performance
-    user.updateCategoryPoints();
-    
-    // Reset weekly stats
-    user.resetWeeklyStats();
-    
-    // Check for new badges
-    await checkAndAwardBadges(user);
-    
-    await user.save();
-
-    res.json({
-      message: 'Category points updated successfully',
-      newPoints: user.categoryPoints,
-      badges: user.badges
-    });
-  } catch (error) {
-    console.error('Update points error:', error);
-    res.status(500).json({ error: 'Server error while updating points' });
-  }
-});
 
 // @route   GET /api/summary/streaks
 // @desc    Get user's streak information
@@ -165,7 +133,7 @@ router.get('/badges', async (req, res) => {
 });
 
 // Helper function to check and award badges
-const checkAndAwardBadges = async (user) => {
+export const checkAndAwardBadges = async (user) => {
   const existingBadges = user.badges.map(b => b.name);
   const newBadges = [];
 

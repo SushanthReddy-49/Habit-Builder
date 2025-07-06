@@ -3,32 +3,23 @@ import { motion } from 'framer-motion';
 import { 
   BarChart3, 
   TrendingUp, 
-  Calendar, 
   Trophy, 
   Flame, 
   Target,
-  RefreshCw,
   ArrowLeft
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTask } from '../../contexts/TaskContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useGuest } from '../../contexts/GuestContext';
-import CategoryBadge from '../common/CategoryBadge';
-import { format, startOfWeek, endOfWeek } from 'date-fns';
+import { format } from 'date-fns';
 import { 
-  animateProgressBar, 
-  showToast, 
-  animateCounter, 
-  highlightElement,
-  scrollToTop,
-  focusFirstInput 
+  animateProgressBar
 } from '../../utils/jquery-utils';
 
 const Summary = () => {
   const [loading, setLoading] = useState(true);
-  const [updatingPoints, setUpdatingPoints] = useState(false);
-  const { summary, fetchSummary, updateCategoryPoints } = useTask();
+  const { summary, fetchSummary } = useTask();
   const { user } = useAuth();
   const { guest, getGuestSummary } = useGuest();
   const navigate = useNavigate();
@@ -56,31 +47,9 @@ const Summary = () => {
     }
   }, [summary, guest, getGuestSummary]);
 
-  const handleUpdatePoints = async () => {
-    if (guest) {
-      showToast('Guest users cannot update points', 'info');
-      return;
-    }
-    
-    setUpdatingPoints(true);
-    const result = await updateCategoryPoints();
-    setUpdatingPoints(false);
-    
-    // Toast notifications are handled by the TaskContext
-    // No need to show additional toasts here
-  };
 
-  const getCompletionColor = (rate) => {
-    if (rate >= 80) return 'text-green-600';
-    if (rate >= 60) return 'text-yellow-600';
-    return 'text-red-600';
-  };
 
-  const getProgressBarColor = (rate) => {
-    if (rate >= 80) return 'bg-green-500';
-    if (rate >= 60) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
+
 
   // Get current summary data based on user type
   const currentSummary = guest ? getGuestSummary() : summary;
@@ -122,20 +91,9 @@ const Summary = () => {
             </div>
           </div>
 
-          <motion.button
-            onClick={handleUpdatePoints}
-            disabled={updatingPoints}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="btn-primary flex items-center space-x-2 disabled:opacity-50"
-          >
-            {updatingPoints ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-            <span>Update Points</span>
-          </motion.button>
+          <div className="text-sm text-gray-500">
+            Points update automatically every Sunday at 9PM
+          </div>
         </div>
 
 

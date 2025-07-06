@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User.js';
 import auth from '../middleware/auth.js';
+import { checkAndPerformWeeklyUpdate } from '../services/weeklyUpdate.js';
 
 const router = express.Router();
 
@@ -89,6 +90,9 @@ router.post('/login', [
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
+    // Check and perform weekly update if Sunday 9PM has passed
+    const weeklyUpdateResult = await checkAndPerformWeeklyUpdate(user);
+    
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id },
@@ -104,7 +108,8 @@ router.post('/login', [
         email: user.email,
         categoryPoints: user.categoryPoints,
         streaks: user.streaks
-      }
+      },
+      weeklyUpdate: weeklyUpdateResult
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -118,7 +123,14 @@ router.post('/login', [
 router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
-    res.json(user);
+    
+    // Check and perform weekly update if Sunday 9PM has passed
+    const weeklyUpdateResult = await checkAndPerformWeeklyUpdate(user);
+    
+    res.json({
+      ...user.toObject(),
+      weeklyUpdate: weeklyUpdateResult
+    });
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Server error' });

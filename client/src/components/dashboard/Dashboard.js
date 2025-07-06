@@ -9,7 +9,6 @@ import {
   CheckCircle, 
   Clock, 
   XCircle,
-  TrendingUp,
   Flame,
   Trophy,
   Edit,
@@ -22,16 +21,7 @@ import CategoryBadge from '../common/CategoryBadge';
 import { format } from 'date-fns';
 import { 
   animateCounter, 
-  highlightElement, 
-  scrollToTop, 
-  showConfirmationDialog, 
-  focusFirstInput,
-  addElementWithAnimation,
-  removeElementWithAnimation,
-  setLocalStorage,
-  getLocalStorage,
-  onEnterKey,
-  onEscapeKey
+  showConfirmationDialog
 } from '../../utils/jquery-utils';
 
 const Dashboard = () => {
@@ -39,7 +29,7 @@ const Dashboard = () => {
   const { tasks, loading, fetchTasks, deleteTask } = useTask();
   const { guest, guestTasks, getGuestTasksByDate, deleteGuestTask } = useGuest();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [editingTask, setEditingTask] = useState(null);
+
   const [deletingTask, setDeletingTask] = useState(null);
   const navigate = useNavigate();
 
@@ -79,10 +69,9 @@ const Dashboard = () => {
     return stats;
   };
 
-  const categoryStats = getCategoryStats();
+
 
   const handleEditTask = (task) => {
-    setEditingTask(task);
     // Navigate to edit page or open modal
     navigate(`/edit-task/${task._id}`);
   };
@@ -290,7 +279,7 @@ const Dashboard = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className={`p-4 rounded-lg border ${
+                      className={`p-4 rounded-lg border group ${
                         task.status === 'done'
                           ? 'bg-green-50 border-green-200'
                           : task.status === 'missed'
@@ -318,8 +307,8 @@ const Dashboard = () => {
                           </div>
                         </div>
                         
-                        {/* Action Buttons */}
-                        <div className="flex items-center space-x-2 ml-4">
+                        {/* Action Buttons - Only visible on hover */}
+                        <div className="flex items-center space-x-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                           <motion.button
                             onClick={() => handleEditTask(task)}
                             whileHover={{ scale: 1.05 }}

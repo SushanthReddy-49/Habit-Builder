@@ -44,6 +44,10 @@ const userSchema = new mongoose.Schema({
     earnedAt: { type: Date, default: Date.now },
     description: String
   }],
+  // Track when the last weekly update was performed
+  lastWeeklyUpdate: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -69,20 +73,42 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 };
 
 // Method to update category points based on weekly performance
+// Updated logic: Only adjust points if user has participated (has tasks in the past week)
 userSchema.methods.updateCategoryPoints = function() {
   const categories = ['work', 'health', 'personal', 'learning'];
   
+  // Check if user has any tasks in the past week
+  const totalWeeklyTasks = categories.reduce((sum, category) => {
+    return sum + this.weeklyStats[category].total;
+  }, 0);
+  
+  // If no tasks in the past week, don't adjust points (user is new or inactive)
+  if (totalWeeklyTasks === 0) {
+    console.log(`🆕 User has no tasks in the past week - keeping current points unchanged`);
+    return;
+  }
+  
   categories.forEach(category => {
     const stats = this.weeklyStats[category];
-    const completionRate = stats.total > 0 ? stats.completed / stats.total : 0;
     
-    if (completionRate < 0.5) {
-      // Poor performance - increase points
-      this.categoryPoints[category] = Math.min(this.categoryPoints[category] + 2, 20);
-    } else if (completionRate > 0.8) {
-      // High performance - decrease points slightly
-      this.categoryPoints[category] = Math.max(this.categoryPoints[category] - 1, 5);
+    if (stats.total === 0) {
+      // No tasks in this category this week, keep current points
+      return;
     }
+    
+    const avgCompletion = stats.completed;
+    const totalTasks = stats.total;
+    
+    if (avgCompletion < totalTasks) {
+      // User is not completing all tasks in this category - increase points to encourage completion
+      this.categoryPoints[category] = Math.min(this.categoryPoints[category] + 2, 20);
+      console.log(`📈 Increasing ${category} points to ${this.categoryPoints[category]} (completed: ${avgCompletion}/${totalTasks})`);
+    } else if (avgCompletion === totalTasks && totalTasks > 0) {
+      // User completed all tasks in this category - reduce points slightly to maintain challenge
+      this.categoryPoints[category] = Math.max(this.categoryPoints[category] - 1, 5);
+      console.log(`📉 Slightly reducing ${category} points to ${this.categoryPoints[category]} (perfect completion: ${avgCompletion}/${totalTasks})`);
+    }
+    // If avgCompletion equals totalTasks but totalTasks is 0, no change needed
   });
 };
 
