@@ -150,69 +150,6 @@ Week: ${currentSummary?.week ? `${format(new Date(currentSummary.week.start), 'M
           </div>
         </div>
 
-
-
-        {/* Category Performance and Adaptive Scoring - hidden for all users until weekend points are given */}
-        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="card">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Category Performance</h2>
-            <div className="space-y-6">
-              {currentSummary?.categoryStats && Object.entries(currentSummary.categoryStats).map(([category, stats]) => (
-                <div key={category} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <CategoryBadge category={category} size="md" />
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">
-                        {stats.completed}/{stats.total} completed
-                      </p>
-                      <p className={`text-sm font-medium ${getCompletionColor(stats.completionRate)}`}>
-                        {Math.round(stats.completionRate)}%
-                      </p>
-                    </div>
-                  </div>
-                  <div id={`progress-${category}`} className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full progress-fill ${getProgressBarColor(stats.completionRate)}`}
-                      style={{ width: '0%' }}
-                    ></div>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>{stats.points} points earned</span>
-                    <span>Current value: {currentSummary?.currentPoints?.[category] || 10} pts</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="card">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Adaptive Scoring</h2>
-            <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="font-medium text-blue-800 mb-2">How it works</h3>
-                <p className="text-blue-700 text-sm">
-                  Your task point values automatically adjust based on your weekly performance:
-                </p>
-                <ul className="text-blue-700 text-sm mt-2 space-y-1">
-                  <li>• Poor performance (&lt;50% completion): Points increase</li>
-                  <li>• High performance (&gt;80% completion): Points decrease slightly</li>
-                  <li>• Points never go below 5 or above 20</li>
-                </ul>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="font-medium text-gray-900">Current Point Values</h3>
-                {currentSummary?.currentPoints && Object.entries(currentSummary.currentPoints).map(([category, points]) => (
-                  <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <CategoryBadge category={category} showIcon={false} />
-                    <span className="font-bold text-lg text-gray-900">{points} pts</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div> */}
-
         {/* Streak Information - Moved to top */}
         <div className="card mb-8">
           <div className="flex items-center justify-between mb-6">
