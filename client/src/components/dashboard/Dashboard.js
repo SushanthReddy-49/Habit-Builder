@@ -12,7 +12,8 @@ import {
   Flame,
   Trophy,
   Edit,
-  Trash2
+  Trash2,
+  ArrowUp
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTask } from '../../contexts/TaskContext';
@@ -21,7 +22,15 @@ import CategoryBadge from '../common/CategoryBadge';
 import { format } from 'date-fns';
 import { 
   animateCounter, 
-  showConfirmationDialog
+  showConfirmationDialog, 
+  scrollToTop, 
+  highlightElement,
+  focusFirstInput,
+  onEnterKey,
+  onEscapeKey,
+  showLoading,
+  hideLoading,
+  autoHideElement
 } from '../../utils/jquery-utils';
 
 const Dashboard = () => {
@@ -51,7 +60,7 @@ const Dashboard = () => {
       animateCounter('.missed-count', missedTasks.length);
       animateCounter('.streak-count', user?.streaks?.current || 0);
     }
-  }, [tasks, guestTasks, loading, user?.streaks?.current]);
+  }, [tasks, guestTasks, loading, completedTasks.length, pendingTasks.length, missedTasks.length, user?.streaks?.current]);
 
   // Get tasks based on user type
   const currentTasks = guest ? getGuestTasksByDate(selectedDate) : tasks;
@@ -59,20 +68,13 @@ const Dashboard = () => {
   const pendingTasks = currentTasks.filter(task => task.status === 'pending');
   const missedTasks = currentTasks.filter(task => task.status === 'missed');
 
-  const getCategoryStats = () => {
-    const stats = { work: 0, health: 0, personal: 0, learning: 0 };
-    currentTasks.forEach(task => {
-      if (stats.hasOwnProperty(task.category)) {
-        stats[task.category]++;
-      }
-    });
-    return stats;
-  };
 
 
-
+  // Enhanced task management with jQuery utilities
   const handleEditTask = (task) => {
-    // Navigate to edit page or open modal
+    // Highlight the task being edited
+    highlightElement(`#task-${task._id}`, 2000);
+    // Navigate to edit page
     navigate(`/edit-task/${task._id}`);
   };
 
@@ -81,21 +83,52 @@ const Dashboard = () => {
       'Are you sure you want to delete this task?',
       async () => {
         setDeletingTask(taskId);
+        showLoading('#loading-spinner');
         try {
           const result = guest ? await deleteGuestTask(taskId) : await deleteTask(taskId);
           if (result.success) {
+            // Highlight the deleted task before removal
+            highlightElement(`#task-${taskId}`, 1000);
             // Task will be automatically removed from the list due to context update
           }
         } catch (error) {
           console.error('Error deleting task:', error);
         } finally {
           setDeletingTask(null);
+          hideLoading('#loading-spinner');
         }
       },
       () => {
         // User cancelled deletion
       }
     );
+  };
+
+  // Keyboard shortcuts for better UX
+  useEffect(() => {
+    // Enter key to add new task
+    onEnterKey('body', (e) => {
+      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        navigate('/add-task');
+      }
+    });
+
+    // Escape key to go back
+    onEscapeKey('body', () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      }
+    });
+
+    // Auto-hide loading spinner after 5 seconds
+    if (loading) {
+      autoHideElement('#loading-spinner', 5000);
+    }
+  }, [loading, navigate]);
+
+  // Scroll to top functionality
+  const handleScrollToTop = () => {
+    scrollToTop();
   };
 
   const quickActions = [
@@ -276,6 +309,7 @@ const Dashboard = () => {
                   {tasks.map((task, index) => (
                     <motion.div
                       key={task._id}
+                      id={`task-${task._id}`}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
@@ -389,6 +423,19 @@ const Dashboard = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Scroll to Top Button */}
+      <motion.button
+        onClick={handleScrollToTop}
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        className="fixed bottom-6 right-6 p-3 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-colors z-50"
+        title="Scroll to top"
+      >
+        <ArrowUp className="h-5 w-5" />
+      </motion.button>
     </div>
   );
 };

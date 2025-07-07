@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, ArrowLeft, Save, X } from 'lucide-react';
+import { Calendar, ArrowLeft, Save, X, Trash2 } from 'lucide-react';
 import { useTask } from '../../contexts/TaskContext';
 import { useGuest } from '../../contexts/GuestContext';
-import { validateForm, showToast } from '../../utils/jquery-utils';
+import { 
+  validateForm, 
+  showToast, 
+  focusFirstInput,
+  onEnterKey,
+  onEscapeKey,
+  showLoading,
+  hideLoading,
+  autoHideElement,
+  showConfirmationDialog
+} from '../../utils/jquery-utils';
 
 const TaskEdit = () => {
   const { taskId } = useParams();
   const navigate = useNavigate();
-  const { tasks, updateTask } = useTask();
-  const { guest, getGuestTaskById, updateGuestTask } = useGuest();
+  const { tasks, updateTask, deleteTask } = useTask();
+  const { guest, getGuestTaskById, updateGuestTask, deleteGuestTask } = useGuest();
   
   const [formData, setFormData] = useState({
     title: '',
@@ -52,15 +62,18 @@ const TaskEdit = () => {
     });
   };
 
+  // Enhanced form handling with jQuery utilities
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm('#edit-task-form')) {
       showToast('Please fill in all required fields', 'error');
+      focusFirstInput('#edit-task-form');
       return;
     }
     
     setLoading(true);
+    showLoading('#loading-spinner');
 
     try {
       const result = guest 
@@ -77,12 +90,69 @@ const TaskEdit = () => {
       showToast('An error occurred while updating the task', 'error');
     } finally {
       setLoading(false);
+      hideLoading('#loading-spinner');
     }
   };
 
   const handleCancel = () => {
     navigate('/');
   };
+
+  const handleDelete = () => {
+    showConfirmationDialog(
+      'Are you sure you want to delete this task?',
+      async () => {
+        setLoading(true);
+        showLoading('#loading-spinner');
+        try {
+          const result = guest 
+            ? await deleteGuestTask(taskId)
+            : await deleteTask(taskId);
+          
+          if (result.success) {
+            showToast('Task deleted successfully!', 'success');
+            navigate('/');
+          } else {
+            showToast(result.error || 'Failed to delete task', 'error');
+          }
+        } catch (error) {
+          showToast('An error occurred while deleting the task', 'error');
+        } finally {
+          setLoading(false);
+          hideLoading('#loading-spinner');
+        }
+      },
+      () => {
+        // User cancelled deletion
+      }
+    );
+  };
+
+  // Keyboard shortcuts for better UX
+  useEffect(() => {
+    // Enter key to submit form
+    onEnterKey('#edit-task-form', (e) => {
+      if (e.target.tagName === 'TEXTAREA') {
+        // Allow new lines in textarea
+        return;
+      }
+      e.preventDefault();
+      handleSubmit(e);
+    });
+
+    // Escape key to go back
+    onEscapeKey('body', () => {
+      navigate('/');
+    });
+
+    // Focus first input on mount
+    focusFirstInput('#edit-task-form');
+
+    // Auto-hide loading spinner after 10 seconds
+    if (loading) {
+      autoHideElement('#loading-spinner', 10000);
+    }
+  }, [loading, navigate]);
 
   if (!task) {
     return (
@@ -197,6 +267,18 @@ const TaskEdit = () => {
               >
                 <X className="h-5 w-5" />
                 <span>Cancel</span>
+              </motion.button>
+
+              <motion.button
+                type="button"
+                onClick={handleDelete}
+                disabled={loading}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
+              >
+                <Trash2 className="h-5 w-5" />
+                <span>Delete</span>
               </motion.button>
             </div>
           </form>

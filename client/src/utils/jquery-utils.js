@@ -8,19 +8,6 @@ const getJQuery = () => {
   return null;
 };
 
-// Smooth scroll to element
-export const smoothScrollTo = (selector, offset = 0) => {
-  const $ = getJQuery();
-  if (!$) return;
-  
-  const $element = $(selector);
-  if ($element.length) {
-    $('html, body').animate({
-      scrollTop: $element.offset().top - offset
-    }, 800);
-  }
-};
-
 // Fade in/out animations
 export const fadeInElement = (selector, duration = 400) => {
   const $ = getJQuery();
@@ -47,19 +34,6 @@ export const slideUpElement = (selector, duration = 400) => {
   $(selector).slideUp(duration);
 };
 
-// Add/remove CSS classes with animation
-export const addClassWithAnimation = (selector, className, duration = 300) => {
-  const $ = getJQuery();
-  if (!$) return;
-  $(selector).addClass(className).fadeIn(duration);
-};
-
-export const removeClassWithAnimation = (selector, className, duration = 300) => {
-  const $ = getJQuery();
-  if (!$) return;
-  $(selector).removeClass(className).fadeOut(duration);
-};
-
 // Form validation helpers
 export const validateForm = (formSelector) => {
   const $ = getJQuery();
@@ -81,15 +55,6 @@ export const validateForm = (formSelector) => {
   });
   
   return isValid;
-};
-
-// Clear form fields
-export const clearForm = (formSelector) => {
-  const $ = getJQuery();
-  if (!$) return;
-  
-  $(formSelector)[0].reset();
-  $(formSelector).find('input, textarea').removeClass('border-red-500');
 };
 
 // Show/hide loading spinner
@@ -156,44 +121,6 @@ export const animateCounter = (selector, targetValue, duration = 1000) => {
   });
 };
 
-// Smooth table row animations
-export const addTableRow = (tableSelector, rowHtml) => {
-  const $ = getJQuery();
-  if (!$) return;
-  
-  const $table = $(tableSelector);
-  const $newRow = $(rowHtml).hide();
-  $table.find('tbody').append($newRow);
-  $newRow.fadeIn(400);
-};
-
-export const removeTableRow = (rowSelector, callback) => {
-  const $ = getJQuery();
-  if (!$) return;
-  
-  $(rowSelector).fadeOut(400, function() {
-    $(this).remove();
-    if (callback) callback();
-  });
-};
-
-// Modal helpers
-export const showModal = (modalSelector) => {
-  const $ = getJQuery();
-  if (!$) return;
-  
-  $(modalSelector).fadeIn(300);
-  $('body').addClass('overflow-hidden');
-};
-
-export const hideModal = (modalSelector) => {
-  const $ = getJQuery();
-  if (!$) return;
-  
-  $(modalSelector).fadeOut(300);
-  $('body').removeClass('overflow-hidden');
-};
-
 // Progress bar animation
 export const animateProgressBar = (selector, percentage, duration = 1000) => {
   const $ = getJQuery();
@@ -253,33 +180,6 @@ export const highlightElement = (selector, duration = 2000) => {
   }, duration);
 };
 
-// Check if element is in viewport
-export const isInViewport = (selector) => {
-  const $ = getJQuery();
-  if (!$) return false;
-  
-  const $element = $(selector);
-  const elementTop = $element.offset().top;
-  const elementBottom = elementTop + $element.outerHeight();
-  const viewportTop = $(window).scrollTop();
-  const viewportBottom = viewportTop + $(window).height();
-  
-  return elementBottom > viewportTop && elementTop < viewportBottom;
-};
-
-// Lazy load images
-export const lazyLoadImages = () => {
-  const $ = getJQuery();
-  if (!$) return;
-  
-  $('img[data-src]').each(function() {
-    const $img = $(this);
-    if (isInViewport($img)) {
-      $img.attr('src', $img.data('src')).removeAttr('data-src');
-    }
-  });
-};
-
 // Enhanced localStorage utilities with jQuery
 export const setLocalStorage = (key, value) => {
   const $ = getJQuery();
@@ -332,61 +232,12 @@ export const removeLocalStorage = (key) => {
   $(window).trigger('localStorage:remove', { key });
 };
 
-// Enhanced DOM manipulation utilities
-export const addElementWithAnimation = (parentSelector, elementHtml, animation = 'fadeIn') => {
-  const $ = getJQuery();
-  if (!$) return;
-  
-  const $parent = $(parentSelector);
-  const $newElement = $(elementHtml);
-  
-  switch (animation) {
-    case 'slideDown':
-      $newElement.hide().appendTo($parent).slideDown(400);
-      break;
-    case 'fadeIn':
-    default:
-      $newElement.hide().appendTo($parent).fadeIn(400);
-      break;
-  }
-};
-
-export const removeElementWithAnimation = (selector, animation = 'fadeOut', callback) => {
-  const $ = getJQuery();
-  if (!$) return;
-  
-  const $element = $(selector);
-  
-  switch (animation) {
-    case 'slideUp':
-      $element.slideUp(400, function() {
-        $(this).remove();
-        if (callback) callback();
-      });
-      break;
-    case 'fadeOut':
-    default:
-      $element.fadeOut(400, function() {
-        $(this).remove();
-        if (callback) callback();
-      });
-      break;
-  }
-};
-
 // Enhanced form utilities
 export const focusFirstInput = (formSelector) => {
   const $ = getJQuery();
   if (!$) return;
   
   $(formSelector).find('input:visible:first').focus();
-};
-
-export const selectAllText = (inputSelector) => {
-  const $ = getJQuery();
-  if (!$) return;
-  
-  $(inputSelector).select();
 };
 
 export const copyToClipboard = (text) => {

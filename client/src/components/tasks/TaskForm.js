@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, ArrowLeft } from 'lucide-react';
+import { Calendar, ArrowLeft, Plus } from 'lucide-react';
 import { useTask } from '../../contexts/TaskContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useGuest } from '../../contexts/GuestContext';
-import { 
-  validateForm, 
-  clearForm, 
-  showToast, 
-  focusFirstInput, 
+import {
+  validateForm,
+  showToast,
+  clearForm,
+  focusFirstInput,
   onEnterKey,
   onEscapeKey,
-  highlightElement 
+  showLoading,
+  hideLoading,
+  autoHideElement
 } from '../../utils/jquery-utils';
 
 const TaskForm = () => {
@@ -32,36 +35,69 @@ const TaskForm = () => {
     });
   };
 
+  // Enhanced form handling with jQuery utilities
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Use jQuery for form validation
     if (!validateForm('#task-form')) {
       showToast('Please fill in all required fields', 'error');
-      highlightElement('#title');
+      focusFirstInput('#task-form');
       return;
     }
     
     setLoading(true);
+    showLoading('#loading-spinner');
 
-    // Use appropriate function based on user type
-    const result = guest ? await addGuestTask(formData) : await addTask(formData);
-    
-    if (result.success) {
-      clearForm('#task-form');
-      setFormData({ title: '', description: '', date: new Date().toISOString().split('T')[0] });
+    try {
+      // Use appropriate function based on user type
+      const result = guest ? await addGuestTask(formData) : await addTask(formData);
       
-      // Show success message with jQuery toast
-      showToast(`Task added! Categorized as ${result.categorization.category}`, 'success');
-      
-      // Navigate back immediately after successful task creation
-      navigate('/');
-    } else {
-      showToast(result.error || 'Failed to add task', 'error');
+      if (result.success) {
+        clearForm('#task-form');
+        setFormData({ title: '', description: '', date: new Date().toISOString().split('T')[0] });
+        
+        // Show success message with jQuery toast
+        showToast(`Task added! Categorized as ${result.categorization.category}`, 'success');
+        
+        // Navigate back immediately after successful task creation
+        navigate('/');
+      } else {
+        showToast(result.error || 'Failed to add task', 'error');
+      }
+    } catch (error) {
+      showToast('An error occurred while adding the task', 'error');
+    } finally {
+      setLoading(false);
+      hideLoading('#loading-spinner');
     }
-    
-    setLoading(false);
   };
+
+  // Keyboard shortcuts for better UX
+  React.useEffect(() => {
+    // Enter key to submit form
+    onEnterKey('#task-form', (e) => {
+      if (e.target.tagName === 'TEXTAREA') {
+        // Allow new lines in textarea
+        return;
+      }
+      e.preventDefault();
+      handleSubmit(e);
+    });
+
+    // Escape key to go back
+    onEscapeKey('body', () => {
+      navigate('/');
+    });
+
+    // Focus first input on mount
+    focusFirstInput('#task-form');
+
+    // Auto-hide loading spinner after 10 seconds
+    if (loading) {
+      autoHideElement('#loading-spinner', 10000);
+    }
+  }, [loading, navigate]);
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -83,8 +119,6 @@ const TaskForm = () => {
             <p className="text-gray-600">Create a task and let AI categorize it for you</p>
           </div>
         </div>
-
-
 
         {/* Task Form */}
         <div className="card">
@@ -136,8 +170,6 @@ const TaskForm = () => {
                 />
               </div>
             </div>
-
-
 
             <motion.button
               type="submit"
