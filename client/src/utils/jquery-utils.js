@@ -240,6 +240,19 @@ export const focusFirstInput = (formSelector) => {
   $(formSelector).find('input:visible:first').focus();
 };
 
+export const clearForm = (formSelector) => {
+  const $ = getJQuery();
+  if (!$) return;
+  
+  const $form = $(formSelector);
+  $form.find('input[type="text"], input[type="email"], input[type="password"], textarea').val('');
+  $form.find('input[type="date"]').val(new Date().toISOString().split('T')[0]);
+  $form.find('select').prop('selectedIndex', 0);
+  
+  // Remove validation classes
+  $form.find('.border-red-500').removeClass('border-red-500');
+};
+
 export const copyToClipboard = (text) => {
   const $ = getJQuery();
   if (!$) return;

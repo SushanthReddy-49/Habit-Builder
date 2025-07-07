@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, ArrowLeft, Save, X, Trash2 } from 'lucide-react';
 import { useTask } from '../../contexts/TaskContext';
-import { useGuest } from '../../contexts/GuestContext';
 import { 
   validateForm, 
   showToast, 
@@ -20,7 +19,6 @@ const TaskEdit = () => {
   const { taskId } = useParams();
   const navigate = useNavigate();
   const { tasks, updateTask, deleteTask } = useTask();
-  const { guest, getGuestTaskById, updateGuestTask, deleteGuestTask } = useGuest();
   
   const [formData, setFormData] = useState({
     title: '',
@@ -32,12 +30,7 @@ const TaskEdit = () => {
 
   useEffect(() => {
     const loadTask = () => {
-      let currentTask;
-      if (guest) {
-        currentTask = getGuestTaskById(taskId);
-      } else {
-        currentTask = tasks.find(t => t._id === taskId);
-      }
+      const currentTask = tasks.find(t => t._id === taskId);
       
       if (currentTask) {
         setTask(currentTask);
@@ -53,7 +46,7 @@ const TaskEdit = () => {
     };
 
     loadTask();
-  }, [taskId, tasks, guest, getGuestTaskById, navigate]);
+  }, [taskId, tasks, navigate]);
 
   const handleChange = (e) => {
     setFormData({
@@ -76,9 +69,7 @@ const TaskEdit = () => {
     showLoading('#loading-spinner');
 
     try {
-      const result = guest 
-        ? await updateGuestTask(taskId, formData)
-        : await updateTask(taskId, formData);
+      const result = await updateTask(taskId, formData);
       
       if (result.success) {
         showToast('Task updated successfully!', 'success');
@@ -105,9 +96,7 @@ const TaskEdit = () => {
         setLoading(true);
         showLoading('#loading-spinner');
         try {
-          const result = guest 
-            ? await deleteGuestTask(taskId)
-            : await deleteTask(taskId);
+          const result = await deleteTask(taskId);
           
           if (result.success) {
             showToast('Task deleted successfully!', 'success');

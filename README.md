@@ -6,7 +6,6 @@ A full-stack task management web application with AI-powered task categorization
 
 ### Core Features
 - **User Authentication**: Secure signup/login with JWT tokens
-- **Guest Mode**: Try the app without creating an account (data stored locally)
 - **AI-Powered Task Categorization**: Automatic categorization using Google Gemini API
 - **Task Review Flow**: Mark yesterday's tasks as done or missed
 - **Adaptive Weekly Scoring**: Dynamic point values based on performance
@@ -102,9 +101,7 @@ This application uses a hybrid approach combining **Framer Motion** and **jQuery
 
 ### Getting Started
 1. Open your browser and navigate to `http://localhost:3000`
-2. Choose to either:
-   - **Create an account** for full features and data persistence
-   - **Try as Guest** to experience the app without signing up (data stored locally)
+2. Create an account to get started
 3. Start adding tasks - the AI will automatically categorize them
 4. Review your tasks daily to mark them as done or missed
 5. Check your weekly summary to see your progress
@@ -158,19 +155,6 @@ This application uses a hybrid approach combining **Framer Motion** and **jQuery
 - `GET /api/summary/streaks` - Get streak information
 - `GET /api/summary/badges` - Get user badges
 
-### Guest
-- `POST /api/guest/save-name` - Save guest user's name
-- `GET /api/guest/:guestId` - Get guest information
-- `PUT /api/guest/:guestId/preferences` - Update guest preferences
-- `DELETE /api/guest/:guestId` - Delete guest data
-
-### Guest Mode Features
-- **Local Data Storage**: All guest data is stored in browser localStorage
-- **Name Persistence**: Guest names are optionally saved to database for analytics
-- **Full Feature Access**: Guests can use all app features except point updates
-- **Easy Cleanup**: Clear all guest data with one click
-- **Privacy Focused**: No personal information required to start using the app
-
 ## 🏗️ Project Structure
 
 ```
@@ -198,37 +182,30 @@ HabitBuilder/
 The application includes a comprehensive jQuery utilities file (`client/src/utils/jquery-utils.js`) that provides:
 - Enhanced localStorage management with event triggers
 - Smooth animations and transitions
-- Form validation and user feedback
-- Interactive confirmation dialogs
-- Toast notifications and progress bars
-- Custom jQuery methods and extensions
+- Form validation and error handling
+- Toast notifications and confirmations
+- Progress bar animations
+- Element highlighting and focus management
+- Keyboard shortcuts and event handling
 
-
-### Building for Production
-```bash
-# Build frontend
-cd client && npm run build
-
-# Start production server
-cd server && npm start
-```
-
-## 🚀 Deployment
-
-### Backend Deployment
-1. Set up a MongoDB database (MongoDB Atlas recommended)
-2. Deploy to platforms like Heroku, Railway, or DigitalOcean
-3. Set environment variables in your deployment platform
-
-### Frontend Deployment
-1. Build the React app: `npm run build`
-2. Deploy to platforms like Vercel, Netlify, or GitHub Pages
-3. Update API endpoints to point to your deployed backend
+### Available Scripts
+- `npm run dev` - Start both frontend and backend in development mode
+- `npm run install-all` - Install dependencies for both frontend and backend
+- `npm run build` - Build the frontend for production
+- `npm run start` - Start the backend server
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Commit your changes: `git commit -am 'Add feature'`
-4. Push to the branch: `git push origin feature-name`
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
 5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+If you encounter any issues or have questions, please open an issue on GitHub.

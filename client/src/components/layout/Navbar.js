@@ -14,12 +14,10 @@ import {
   Flame
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useGuest } from '../../contexts/GuestContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout } = useAuth();
-  const { guest, clearGuestData } = useGuest();
   const location = useLocation();
 
   const navItems = [
@@ -72,7 +70,7 @@ const Navbar = () => {
             <div className="hidden sm:flex items-center space-x-2 bg-orange-50 px-3 py-1 rounded-full">
               <Flame className="h-4 w-4 text-orange-500" />
               <span className="text-sm font-medium text-orange-700">
-                {guest?.streaks?.current || user?.streaks?.current || 0} day streak
+                {user?.streaks?.current || 0} day streak
               </span>
             </div>
 
@@ -84,12 +82,11 @@ const Navbar = () => {
               >
                 <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-medium text-sm">
-                    {(guest?.name || user?.name)?.charAt(0).toUpperCase()}
+                    {user?.name?.charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <span className="hidden sm:block text-sm font-medium text-gray-700">
-                  {guest?.name || user?.name}
-                  {guest && <span className="ml-1 text-purple-600 text-xs">(Guest)</span>}
+                  {user?.name}
                 </span>
               </button>
 
@@ -103,26 +100,19 @@ const Navbar = () => {
                 >
                   <div className="px-4 py-2 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900">
-                      {guest?.name || user?.name}
-                      {guest && <span className="ml-1 text-purple-600 text-xs">(Guest)</span>}
+                      {user?.name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {guest ? 'Guest User' : user?.email}
+                      {user?.email}
                     </p>
                   </div>
                   
                   <button
-                    onClick={() => {
-                      if (guest) {
-                        clearGuestData();
-                      } else {
-                        logout();
-                      }
-                    }}
+                    onClick={logout}
                     className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     <LogOut className="h-4 w-4" />
-                    <span>{guest ? 'Clear Guest Data' : 'Sign Out'}</span>
+                    <span>Sign Out</span>
                   </button>
                 </motion.div>
               )}

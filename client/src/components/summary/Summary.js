@@ -17,9 +17,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useTask } from '../../contexts/TaskContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useGuest } from '../../contexts/GuestContext';
 import { 
-  animateProgressBar, 
   showToast, 
   scrollToTop, 
   highlightElement,
@@ -28,30 +26,25 @@ import {
   copyToClipboard,
   showLoading,
   hideLoading,
-  autoHideElement
+  autoHideElement,
+  animateProgressBar
 } from '../../utils/jquery-utils';
 
 const Summary = () => {
   const [loading, setLoading] = useState(true);
   const { summary, fetchSummary } = useTask();
   const { user } = useAuth();
-  const { guest, getGuestSummary } = useGuest();
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadSummary = async () => {
       showLoading('#loading-spinner');
-      if (guest) {
-        // For guest users, summary is calculated locally
-        setLoading(false);
-      } else {
-        await fetchSummary();
-        setLoading(false);
-      }
+      await fetchSummary();
+      setLoading(false);
       hideLoading('#loading-spinner');
     };
     loadSummary();
-  }, [fetchSummary, guest]);
+  }, [fetchSummary]);
 
   // Enhanced UX with jQuery utilities
   useEffect(() => {
@@ -74,21 +67,16 @@ const Summary = () => {
 
   // Animate progress bars when summary data loads
   useEffect(() => {
-    const currentSummary = guest ? getGuestSummary() : summary;
-    if (currentSummary?.categoryStats) {
-      Object.entries(currentSummary.categoryStats).forEach(([category, stats]) => {
+    if (summary?.categoryStats) {
+      Object.entries(summary.categoryStats).forEach(([category, stats]) => {
         animateProgressBar(`#progress-${category}`, stats.completionRate, 1500);
       });
     }
-  }, [summary, guest, getGuestSummary]);
+  }, [summary]);
 
-
-
-
-
-  // Get current summary data based on user type
-  const currentSummary = guest ? getGuestSummary() : summary;
-  const currentUser = guest || user;
+  // Get current summary data
+  const currentSummary = summary;
+  const currentUser = user;
 
   // Enhanced utility functions
   const handleShareSummary = () => {

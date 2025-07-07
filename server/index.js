@@ -7,7 +7,6 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import taskRoutes from './routes/tasks.js';
 import summaryRoutes from './routes/summary.js';
-import guestRoutes from './routes/guest.js';
 
 dotenv.config();
 
@@ -82,7 +81,6 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/summary', summaryRoutes);
-app.use('/api/guest', guestRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

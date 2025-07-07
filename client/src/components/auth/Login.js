@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
-const Login = ({ onShowGuestLogin }) => {
+const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -110,7 +110,7 @@ const Login = ({ onShowGuestLogin }) => {
           </motion.button>
         </form>
 
-        <div className="mt-6 text-center space-y-4">
+        <div className="mt-6 text-center">
           <p className="text-gray-600">
             Don't have an account?{' '}
             <Link
@@ -120,24 +120,6 @@ const Login = ({ onShowGuestLogin }) => {
               Sign up here
             </Link>
           </p>
-          
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">or</span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onShowGuestLogin}
-            className="w-full flex items-center justify-center space-x-2 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            <Sparkles className="h-4 w-4 text-purple-500" />
-            <span>Try as Guest</span>
-          </button>
         </div>
       </div>
     </motion.div>

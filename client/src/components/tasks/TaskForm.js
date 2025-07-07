@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { Calendar, ArrowLeft, Plus } from 'lucide-react';
 import { useTask } from '../../contexts/TaskContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useGuest } from '../../contexts/GuestContext';
 import {
   validateForm,
   showToast,
@@ -25,7 +24,6 @@ const TaskForm = () => {
   });
   const [loading, setLoading] = useState(false);
   const { addTask } = useTask();
-  const { addGuestTask, guest } = useGuest();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -50,8 +48,7 @@ const TaskForm = () => {
     showLoading('#loading-spinner');
 
     try {
-      // Use appropriate function based on user type
-      const result = guest ? await addGuestTask(formData) : await addTask(formData);
+      const result = await addTask(formData);
       
       if (result.success) {
         clearForm('#task-form');

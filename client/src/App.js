@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './contexts/AuthContext';
-import { useGuest } from './contexts/GuestContext';
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
-import GuestLogin from './components/auth/GuestLogin';
 import Dashboard from './components/dashboard/Dashboard';
 import TaskForm from './components/tasks/TaskForm';
 import TaskEdit from './components/tasks/TaskEdit';
@@ -17,8 +15,6 @@ import { initializeJQueryUtils } from './utils/jquery-utils';
 
 function App() {
   const { user, loading } = useAuth();
-  const { guest } = useGuest();
-  const [showGuestLogin, setShowGuestLogin] = useState(false);
 
   // Initialize jQuery utilities when component mounts
   useEffect(() => {
@@ -32,7 +28,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AnimatePresence mode="wait">
-        {user || guest ? (
+        {user ? (
           <motion.div
             key="authenticated"
             initial={{ opacity: 0 }}
@@ -62,18 +58,13 @@ function App() {
             className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-purple-50"
           >
             <Routes>
-              <Route path="/login" element={<Login onShowGuestLogin={() => setShowGuestLogin(true)} />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </motion.div>
         )}
       </AnimatePresence>
-      
-      {/* Guest Login Modal */}
-      {showGuestLogin && (
-        <GuestLogin onClose={() => setShowGuestLogin(false)} />
-      )}
     </div>
   );
 }

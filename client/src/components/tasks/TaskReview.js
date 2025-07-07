@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, ArrowLeft, Clock, Calendar } from 'lucide-react';
 import { useTask } from '../../contexts/TaskContext';
-import { useGuest } from '../../contexts/GuestContext';
 import CategoryBadge from '../common/CategoryBadge';
 import { format, subDays } from 'date-fns';
 import { showToast, slideDownElement, slideUpElement } from '../../utils/jquery-utils';
@@ -12,27 +11,20 @@ const TaskReview = () => {
   const [loading, setLoading] = useState(true);
   const [updatingTask, setUpdatingTask] = useState(null);
   const { reviewTasks, fetchReviewTasks, updateTaskStatus } = useTask();
-  const { guest, getGuestTasksByDate, updateGuestTaskStatus } = useGuest();
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadReviewTasks = async () => {
-      if (guest) {
-        // For guest users, review tasks are managed locally
-        setLoading(false);
-      } else {
-        await fetchReviewTasks();
-        setLoading(false);
-      }
+      await fetchReviewTasks();
+      setLoading(false);
     };
     loadReviewTasks();
-  }, [fetchReviewTasks, guest]);
+  }, [fetchReviewTasks]);
 
   const handleTaskAction = async (taskId, status) => {
     setUpdatingTask(taskId);
     
-    // Use appropriate function based on user type
-    const result = guest ? await updateGuestTaskStatus(taskId, status) : await updateTaskStatus(taskId, status);
+    const result = await updateTaskStatus(taskId, status);
     
     setUpdatingTask(null);
     
@@ -43,8 +35,8 @@ const TaskReview = () => {
   const yesterday = subDays(new Date(), 1);
   yesterday.setHours(0, 0, 0, 0); // Ensure it's start of day
   
-  // Get current review tasks based on user type
-  const currentReviewTasks = guest ? getGuestTasksByDate(yesterday) : reviewTasks;
+  // Get current review tasks
+  const currentReviewTasks = reviewTasks;
   
   // Additional safeguard: filter out any tasks that are not from yesterday
   const filteredReviewTasks = currentReviewTasks.filter(task => {

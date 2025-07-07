@@ -5,7 +5,6 @@ import './index.css';
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
 import { TaskProvider } from './contexts/TaskContext';
-import { GuestProvider } from './contexts/GuestContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -13,9 +12,7 @@ root.render(
     <BrowserRouter>
       <AuthProvider>
         <TaskProvider>
-          <GuestProvider>
-            <App />
-          </GuestProvider>
+          <App />
         </TaskProvider>
       </AuthProvider>
     </BrowserRouter>

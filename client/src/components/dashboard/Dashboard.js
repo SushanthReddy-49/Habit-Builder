@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTask } from '../../contexts/TaskContext';
-import { useGuest } from '../../contexts/GuestContext';
 import CategoryBadge from '../common/CategoryBadge';
 import { format } from 'date-fns';
 import { 
@@ -25,7 +24,6 @@ import {
   showConfirmationDialog, 
   scrollToTop, 
   highlightElement,
-  focusFirstInput,
   onEnterKey,
   onEscapeKey,
   showLoading,
@@ -36,20 +34,20 @@ import {
 const Dashboard = () => {
   const { user } = useAuth();
   const { tasks, loading, fetchTasks, deleteTask } = useTask();
-  const { guest, guestTasks, getGuestTasksByDate, deleteGuestTask } = useGuest();
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const [deletingTask, setDeletingTask] = useState(null);
   const navigate = useNavigate();
 
+  // Get tasks based on user type
+  const currentTasks = tasks;
+  const completedTasks = currentTasks.filter(task => task.status === 'done');
+  const pendingTasks = currentTasks.filter(task => task.status === 'pending');
+  const missedTasks = currentTasks.filter(task => task.status === 'missed');
+
   useEffect(() => {
-    if (guest) {
-      // For guest users, tasks are managed locally
-      // No need to fetch from server
-    } else {
-      fetchTasks(selectedDate);
-    }
-  }, [selectedDate, guest, fetchTasks]);
+    fetchTasks(selectedDate);
+  }, [selectedDate, fetchTasks]);
 
   // Use jQuery to animate counters when stats change
   useEffect(() => {
@@ -60,15 +58,7 @@ const Dashboard = () => {
       animateCounter('.missed-count', missedTasks.length);
       animateCounter('.streak-count', user?.streaks?.current || 0);
     }
-  }, [tasks, guestTasks, loading, completedTasks.length, pendingTasks.length, missedTasks.length, user?.streaks?.current]);
-
-  // Get tasks based on user type
-  const currentTasks = guest ? getGuestTasksByDate(selectedDate) : tasks;
-  const completedTasks = currentTasks.filter(task => task.status === 'done');
-  const pendingTasks = currentTasks.filter(task => task.status === 'pending');
-  const missedTasks = currentTasks.filter(task => task.status === 'missed');
-
-
+  }, [tasks, loading, completedTasks.length, pendingTasks.length, missedTasks.length, user?.streaks?.current]);
 
   // Enhanced task management with jQuery utilities
   const handleEditTask = (task) => {
@@ -85,7 +75,7 @@ const Dashboard = () => {
         setDeletingTask(taskId);
         showLoading('#loading-spinner');
         try {
-          const result = guest ? await deleteGuestTask(taskId) : await deleteTask(taskId);
+          const result = await deleteTask(taskId);
           if (result.success) {
             // Highlight the deleted task before removal
             highlightElement(`#task-${taskId}`, 1000);
@@ -168,11 +158,10 @@ const Dashboard = () => {
         {/* Welcome Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Welcome back, {guest?.name || user?.name}! 👋
+            Welcome back, {user?.name}! 👋
           </h1>
           <p className="text-gray-600">
             Here's your progress for {format(selectedDate, 'EEEE, MMMM d, yyyy')}
-            {guest && <span className="ml-2 text-purple-600 font-medium">(Guest Mode)</span>}
           </p>
         </div>
 
@@ -233,7 +222,7 @@ const Dashboard = () => {
               <div>
                 <p className="text-sm font-medium text-orange-600">Streak</p>
                 <p className="text-2xl font-bold text-orange-900 streak-count">
-                  {guest?.streaks?.current || user?.streaks?.current || 0}
+                  {user?.streaks?.current || 0}
                 </p>
               </div>
               <Flame className="h-8 w-8 text-orange-600" />
