@@ -13,7 +13,8 @@ import {
   Trophy,
   Edit,
   Trash2,
-  ArrowUp
+  ArrowUp,
+  TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTask } from '../../contexts/TaskContext';
@@ -33,8 +34,10 @@ import {
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { tasks, loading, fetchTasks, deleteTask } = useTask();
+  const { tasks, loading, fetchTasks, deleteTask, fetchAllTasks } = useTask();
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [categoryStats, setCategoryStats] = useState({});
+  const [loadingStats, setLoadingStats] = useState(false);
 
   const [deletingTask, setDeletingTask] = useState(null);
   const navigate = useNavigate();
@@ -48,6 +51,47 @@ const Dashboard = () => {
   useEffect(() => {
     fetchTasks(selectedDate);
   }, [selectedDate, fetchTasks]);
+
+  // Fetch and calculate category completion statistics
+  useEffect(() => {
+    const calculateCategoryStats = async () => {
+      setLoadingStats(true);
+      try {
+        const allTasks = await fetchAllTasks();
+        
+        // Group tasks by category and calculate completion rates
+        const stats = {};
+        allTasks.forEach(task => {
+          if (!stats[task.category]) {
+            stats[task.category] = { total: 0, completed: 0 };
+          }
+          stats[task.category].total += 1;
+          if (task.status === 'done') {
+            stats[task.category].completed += 1;
+          }
+        });
+
+        // Only keep categories that have tasks (exclude 0/0 scenarios)
+        const filteredStats = {};
+        Object.entries(stats).forEach(([category, data]) => {
+          if (data.total > 0) {
+            filteredStats[category] = {
+              ...data,
+              percentage: Math.round((data.completed / data.total) * 100)
+            };
+          }
+        });
+
+        setCategoryStats(filteredStats);
+      } catch (error) {
+        console.error('Error calculating category stats:', error);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
+    calculateCategoryStats();
+  }, [fetchAllTasks]);
 
   // Use jQuery to animate counters when stats change
   useEffect(() => {
@@ -367,30 +411,52 @@ const Dashboard = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Category Distribution and Current Points - hidden for all users until weekend points are given */}
-            {/* <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Distribution</h3>
-              <div className="space-y-3">
-                {Object.entries(categoryStats).map(([category, count]) => (
-                  <div key={category} className="flex items-center justify-between">
-                    <CategoryBadge category={category} showIcon={false} />
-                    <span className="font-medium text-gray-900">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
+            {/* Category Completion Statistics */}
             <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Point Values</h3>
-              <div className="space-y-3">
-                {Object.entries(user?.categoryPoints || {}).map(([category, points]) => (
-                  <div key={category} className="flex items-center justify-between">
-                    <CategoryBadge category={category} showIcon={false} />
-                    <span className="font-medium text-gray-900">{points} pts</span>
-                  </div>
-                ))}
+              <div className="flex items-center space-x-2 mb-4">
+                <TrendingUp className="h-5 w-5 text-primary-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Category Progress</h3>
               </div>
-            </div> */}
+              
+              {loadingStats ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+                </div>
+              ) : Object.keys(categoryStats).length === 0 ? (
+                <div className="text-center py-4">
+                  <p className="text-gray-500 text-sm">No completed tasks yet</p>
+                  <p className="text-gray-400 text-xs">Start adding and completing tasks to see your progress</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {Object.entries(categoryStats).map(([category, stats]) => (
+                    <div key={category} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <CategoryBadge category={category} showIcon={false} />
+                        <span className="text-sm font-medium text-gray-900">
+                          {stats.completed}/{stats.total}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full transition-all duration-500 ${
+                            stats.percentage >= 80 ? 'bg-green-500' :
+                            stats.percentage >= 60 ? 'bg-yellow-500' :
+                            stats.percentage >= 40 ? 'bg-orange-500' :
+                            'bg-red-500'
+                          }`}
+                          style={{ width: `${stats.percentage}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>{stats.percentage}% completed</span>
+                        <span>{stats.total - stats.completed} remaining</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Badges */}
             {user?.badges && user.badges.length > 0 && (

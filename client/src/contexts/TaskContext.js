@@ -139,6 +139,17 @@ export const TaskProvider = ({ children }) => {
     }
   }, []);
 
+  const fetchAllTasks = useCallback(async () => {
+    try {
+      const response = await axios.get('/api/tasks/all');
+      return response.data;
+    } catch (error) {
+      showToast('Failed to fetch all tasks', 'error');
+      console.error('Fetch all tasks error:', error);
+      return [];
+    }
+  }, []);
+
 
 
   const value = {
@@ -152,7 +163,8 @@ export const TaskProvider = ({ children }) => {
     updateTaskStatus,
     deleteTask,
     fetchReviewTasks,
-    fetchSummary
+    fetchSummary,
+    fetchAllTasks
   };
 
   return (

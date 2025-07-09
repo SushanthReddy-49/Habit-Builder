@@ -132,6 +132,30 @@ router.get('/review', async (req, res) => {
   }
 });
 
+// @route   GET /api/tasks/all
+// @desc    Get all tasks for a user (excluding today's tasks)
+// @access  Private
+router.get('/all', async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Get today's date at start of day
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Get all tasks except today's
+    const tasks = await Task.find({
+      user: userId,
+      date: { $lt: today }
+    }).sort({ date: -1, createdAt: 1 });
+    
+    res.json(tasks);
+  } catch (error) {
+    console.error('Get all tasks error:', error);
+    res.status(500).json({ error: 'Server error while fetching all tasks' });
+  }
+});
+
 // @route   PUT /api/tasks/:id/edit
 // @desc    Edit task details
 // @access  Private
