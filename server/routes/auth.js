@@ -117,6 +117,40 @@ router.post('/login', [
   }
 });
 
+// @route   GET /api/auth/check-email
+// @desc    Check if email is available
+// @access  Public
+router.get('/check-email', async (req, res) => {
+  try {
+    const { email } = req.query;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Normalize the email the same way as signup/login
+    let normalizedEmail = email.toLowerCase().trim();
+    
+    // Remove dots from Gmail addresses (same as express-validator normalizeEmail)
+    if (normalizedEmail.includes('@gmail.com')) {
+      const [localPart, domain] = normalizedEmail.split('@');
+      normalizedEmail = localPart.replace(/\./g, '') + '@' + domain;
+    }
+    
+    // Check if user exists with the normalized email
+    const user = await User.findOne({ email: normalizedEmail });
+    
+    res.json({
+      available: !user,
+      email: email,
+      normalizedEmail: normalizedEmail
+    });
+  } catch (error) {
+    console.error('Check email error:', error);
+    res.status(500).json({ error: 'Server error while checking email' });
+  }
+});
+
 // @route   GET /api/auth/me
 // @desc    Get current user
 // @access  Private

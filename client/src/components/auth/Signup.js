@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import axios from 'axios';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,8 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [checkingEmail, setCheckingEmail] = useState(false);
   const { signup } = useAuth();
   const navigate = useNavigate();
 
@@ -22,6 +25,36 @@ const Signup = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+    
+    // Clear email error when user starts typing again
+    if (e.target.name === 'email') {
+      setEmailError('');
+    }
+  };
+
+  const handleEmailBlur = async (e) => {
+    const email = e.target.value.trim();
+    
+    // Only check if email is not empty and has valid format
+    if (!email || !email.includes('@')) {
+      return;
+    }
+
+    setCheckingEmail(true);
+    setEmailError('');
+
+    try {
+      const response = await axios.get(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
+      
+      if (!response.data.available) {
+        setEmailError('This email is already in use. Please use a different email address.');
+      }
+    } catch (error) {
+      console.error('Error checking email:', error);
+      // Don't show error to user if the check fails, just log it
+    } finally {
+      setCheckingEmail(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -29,6 +62,12 @@ const Signup = () => {
     
     if (formData.password !== formData.confirmPassword) {
       alert('Passwords do not match');
+      return;
+    }
+
+    // Prevent submission if email is already in use
+    if (emailError) {
+      alert('Please fix the email error before submitting.');
       return;
     }
 
@@ -87,11 +126,23 @@ const Signup = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={handleEmailBlur}
                 required
-                className="input-field pl-10"
+                className={`input-field pl-10 ${emailError ? 'border-red-500 focus:border-red-500' : ''}`}
                 placeholder="Enter your email"
               />
+              {checkingEmail && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+                </div>
+              )}
             </div>
+            {emailError && (
+              <p className="text-red-600 text-xs mt-1 flex items-center">
+                <span className="mr-1">⚠️</span>
+                {emailError}
+              </p>
+            )}
           </div>
 
           <div>
