@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -35,25 +35,33 @@ import {
 const Dashboard = () => {
   const { user } = useAuth();
   const { tasks, loading, fetchTasks, deleteTask, fetchAllTasks } = useTask();
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(() => {
+    // Ensure we get today's date in local timezone
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  });
   const [categoryStats, setCategoryStats] = useState({});
   const [loadingStats, setLoadingStats] = useState(false);
 
   const [deletingTask, setDeletingTask] = useState(null);
   const navigate = useNavigate();
 
-  // Get tasks based on user type
-  const currentTasks = tasks;
-  const completedTasks = currentTasks.filter(task => task.status === 'done');
-  const pendingTasks = currentTasks.filter(task => task.status === 'pending');
-  const missedTasks = currentTasks.filter(task => task.status === 'missed');
+  // Memoized task filtering to prevent unnecessary recalculations
+  const { currentTasks, completedTasks, pendingTasks, missedTasks } = useMemo(() => {
+    const currentTasks = tasks;
+    const completedTasks = currentTasks.filter(task => task.status === 'done');
+    const pendingTasks = currentTasks.filter(task => task.status === 'pending');
+    const missedTasks = currentTasks.filter(task => task.status === 'missed');
+    
+    return { currentTasks, completedTasks, pendingTasks, missedTasks };
+  }, [tasks]);
 
+  // Consolidated useEffect for all data fetching and animations
   useEffect(() => {
+    // Fetch tasks for selected date
     fetchTasks(selectedDate);
-  }, [selectedDate, fetchTasks]);
-
-  // Fetch and calculate category completion statistics
-  useEffect(() => {
+    
+    // Calculate category stats
     const calculateCategoryStats = async () => {
       setLoadingStats(true);
       try {
@@ -91,18 +99,17 @@ const Dashboard = () => {
     };
 
     calculateCategoryStats();
-  }, [fetchAllTasks]);
+  }, [selectedDate, fetchTasks, fetchAllTasks]);
 
-  // Use jQuery to animate counters when stats change
+  // Animate counters when data changes
   useEffect(() => {
     if (!loading) {
-      // Animate the stat counters
       animateCounter('.completed-count', completedTasks.length);
       animateCounter('.pending-count', pendingTasks.length);
       animateCounter('.missed-count', missedTasks.length);
       animateCounter('.streak-count', user?.streaks?.current || 0);
     }
-  }, [tasks, loading, completedTasks.length, pendingTasks.length, missedTasks.length, user?.streaks?.current]);
+  }, [loading, completedTasks.length, pendingTasks.length, missedTasks.length, user?.streaks?.current]);
 
   // Enhanced task management with jQuery utilities
   const handleEditTask = (task) => {
@@ -138,34 +145,36 @@ const Dashboard = () => {
     );
   };
 
-  // Keyboard shortcuts for better UX
+  // Memoized handlers to prevent unnecessary re-renders
+  const handleEnterKey = useCallback((e) => {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      navigate('/add-task');
+    }
+  }, [navigate]);
+
+  const handleEscapeKey = useCallback(() => {
+    if (window.history.length > 1) {
+      window.history.back();
+    }
+  }, []);
+
+  // Keyboard shortcuts and loading spinner management
   useEffect(() => {
-    // Enter key to add new task
-    onEnterKey('body', (e) => {
-      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-        navigate('/add-task');
-      }
-    });
-
-    // Escape key to go back
-    onEscapeKey('body', () => {
-      if (window.history.length > 1) {
-        window.history.back();
-      }
-    });
-
-    // Auto-hide loading spinner after 5 seconds
+    onEnterKey('body', handleEnterKey);
+    onEscapeKey('body', handleEscapeKey);
+    
     if (loading) {
       autoHideElement('#loading-spinner', 5000);
     }
-  }, [loading, navigate]);
+  }, [loading, handleEnterKey, handleEscapeKey]);
 
   // Scroll to top functionality
   const handleScrollToTop = () => {
     scrollToTop();
   };
 
-  const quickActions = [
+  // Memoized quick actions to prevent unnecessary re-renders
+  const quickActions = useMemo(() => [
     {
       title: 'Add Task',
       description: 'Create a new task with AI categorization',
@@ -190,7 +199,7 @@ const Dashboard = () => {
       color: 'bg-purple-500',
       hoverColor: 'hover:bg-purple-600'
     }
-  ];
+  ], []);
 
   return (
     <div className="max-w-7xl mx-auto">
